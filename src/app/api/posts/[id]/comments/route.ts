@@ -3,9 +3,10 @@ import { supabase } from "@/lib/supabase";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { content, author } = body;
 
@@ -20,7 +21,7 @@ export async function POST(
     const { data: post } = await supabase
       .from("posts")
       .select("id")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (!post) {
@@ -34,7 +35,7 @@ export async function POST(
     const { data: comment, error } = await supabase
       .from("comments")
       .insert([{
-        post_id: params.id,
+        post_id: id,
         content,
         author,
       }])

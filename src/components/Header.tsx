@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "cn";
 
 export default function Header() {
   return (
@@ -17,9 +18,9 @@ export default function Header() {
             </Link>
           </nav>
         </div>
-        <Button asChild>
-          <Link href="/posts/new">새 글 쓰기</Link>
-        </Button>
+        <Link href="/posts/new" className={cn(buttonVariants())}>
+          새 글 쓰기
+        </Link>
       </div>
     </header>
   );

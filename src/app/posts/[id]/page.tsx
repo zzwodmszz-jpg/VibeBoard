@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Comments from "@/components/Comments";
@@ -9,7 +9,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Post } from "@/types";
 
-export default function PostPage({ params }: { params: { id: string } }) {
+export default function PostPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +22,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`/api/posts/${params.id}`);
+        const response = await fetch(`/api/posts/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPost(data);
@@ -30,13 +35,13 @@ export default function PostPage({ params }: { params: { id: string } }) {
     };
 
     fetchPost();
-  }, [params.id]);
+  }, [id]);
 
   const handleDelete = async () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      const response = await fetch(`/api/posts/${params.id}`, {
+      const response = await fetch(`/api/posts/${id}`, {
         method: "DELETE",
       });
 
@@ -51,7 +56,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
 
   const handleRefresh = async () => {
     try {
-      const response = await fetch(`/api/posts/${params.id}`);
+      const response = await fetch(`/api/posts/${id}`);
       if (response.ok) {
         const data = await response.json();
         setPost(data);
@@ -147,7 +152,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
 
               <Comments
                 postId={post.id}
-                comments={post.comments}
+                comments={post.comments || []}
                 onCommentAdded={handleRefresh}
               />
             </CardContent>

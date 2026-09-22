@@ -3,14 +3,16 @@ import { supabase } from "@/lib/supabase";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; commentId: string } }
+  { params }: { params: Promise<{ id: string; commentId: string }> }
 ) {
   try {
+    const { id, commentId } = await params;
+
     const { error } = await supabase
       .from("comments")
       .delete()
-      .eq("id", params.commentId)
-      .eq("post_id", params.id);
+      .eq("id", commentId)
+      .eq("post_id", id);
 
     if (error) {
       return NextResponse.json(
