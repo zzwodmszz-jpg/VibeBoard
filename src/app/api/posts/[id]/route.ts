@@ -6,10 +6,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get post
+    // Get post with comments
     const { data: post, error: postError } = await supabase
       .from("posts")
-      .select("*")
+      .select(
+        `
+        *,
+        comments(*)
+      `
+      )
       .eq("id", params.id)
       .single();
 
@@ -26,17 +31,9 @@ export async function GET(
       .update({ views: post.views + 1 })
       .eq("id", params.id);
 
-    // Get comments
-    const { data: comments, error: commentsError } = await supabase
-      .from("comments")
-      .select("*")
-      .eq("post_id", params.id)
-      .order("created_at", { ascending: true });
-
     return NextResponse.json({
       ...post,
       views: post.views + 1,
-      comments: comments || [],
     });
   } catch (error) {
     return NextResponse.json(
@@ -61,7 +58,12 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq("id", params.id)
-      .select()
+      .select(
+        `
+        *,
+        comments(*)
+      `
+      )
       .single();
 
     if (error || !post) {

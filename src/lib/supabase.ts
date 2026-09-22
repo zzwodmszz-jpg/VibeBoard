@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       posts: {
         Row: {
-          id: string;
+          id: string; // UUID
           title: string;
           content: string;
           author: string;
@@ -25,36 +25,29 @@ export type Database = {
           views: number;
         };
         Insert: {
-          id?: string;
           title: string;
           content: string;
           author: string;
-          created_at?: string;
-          updated_at?: string;
-          views?: number;
         };
         Update: {
           title?: string;
           content?: string;
           author?: string;
-          updated_at?: string;
           views?: number;
         };
       };
       comments: {
         Row: {
-          id: string;
-          post_id: string;
+          id: string; // UUID
+          post_id: string; // UUID
           content: string;
           author: string;
           created_at: string;
         };
         Insert: {
-          id?: string;
-          post_id: string;
+          post_id: string; // UUID
           content: string;
           author: string;
-          created_at?: string;
         };
         Update: {
           content?: string;

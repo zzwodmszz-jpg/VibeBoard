@@ -1,5 +1,5 @@
 export interface Post {
-  id: string;
+  id: string; // UUID
   title: string;
   content: string;
   author: string;
@@ -10,11 +10,11 @@ export interface Post {
 }
 
 export interface Comment {
-  id: string;
+  id: string; // UUID
   content: string;
   author: string;
   created_at: string;
-  post_id: string;
+  post_id: string; // UUID
 }
 
 export interface CreatePostInput {

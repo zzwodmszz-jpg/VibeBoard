@@ -5,33 +5,19 @@ export async function GET() {
   try {
     const { data: posts, error } = await supabase
       .from("posts")
-      .select("*")
+      .select(
+        `
+        *,
+        comments(*)
+      `
+      )
       .order("created_at", { ascending: false });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Fetch comments for each post
-    const postsWithComments = await Promise.all(
-      posts.map(async (post) => {
-        const { data: comments } = await supabase
-          .from("comments")
-          .select("*")
-          .eq("post_id", post.id)
-          .order("created_at", { ascending: true });
-
-        return {
-          ...post,
-          comments: comments || [],
-        };
-      })
-    );
-
-    return NextResponse.json(postsWithComments);
+    return NextResponse.json(posts);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch posts" },
@@ -55,17 +41,19 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("posts")
       .insert([{ title, content, author }])
-      .select()
+      .select(
+        `
+        *,
+        comments(*)
+      `
+      )
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ...data, comments: [] }, { status: 201 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create post" },
