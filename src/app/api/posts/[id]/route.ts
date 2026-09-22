@@ -1,20 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const post = db.posts.getById(params.id);
-    if (!post) {
+    // Get post
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", params.id)
+      .single();
+
+    if (postError || !post) {
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
       );
     }
-    db.posts.incrementViews(params.id);
-    return NextResponse.json(post);
+
+    // Increment views
+    await supabase
+      .from("posts")
+      .update({ views: post.views + 1 })
+      .eq("id", params.id);
+
+    // Get comments
+    const { data: comments, error: commentsError } = await supabase
+      .from("comments")
+      .select("*")
+      .eq("post_id", params.id)
+      .order("created_at", { ascending: true });
+
+    return NextResponse.json({
+      ...post,
+      views: post.views + 1,
+      comments: comments || [],
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch post" },
@@ -29,9 +52,19 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const post = db.posts.update(params.id, body);
 
-    if (!post) {
+    const { data: post, error } = await supabase
+      .from("posts")
+      .update({
+        ...(body.title && { title: body.title }),
+        ...(body.content && { content: body.content }),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", params.id)
+      .select()
+      .single();
+
+    if (error || !post) {
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
@@ -52,9 +85,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = db.posts.delete(params.id);
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", params.id);
 
-    if (!deleted) {
+    if (error) {
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }

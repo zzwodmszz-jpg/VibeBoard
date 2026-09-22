@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string; commentId: string } }
 ) {
   try {
-    const deleted = db.comments.deleteComment(params.id, params.commentId);
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", params.commentId)
+      .eq("post_id", params.id);
 
-    if (!deleted) {
+    if (error) {
       return NextResponse.json(
         { error: "Comment not found" },
         { status: 404 }

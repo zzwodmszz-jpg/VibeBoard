@@ -68,7 +68,7 @@ export default function Comments({ postId, comments, onCommentAdded }: CommentsP
                 <div>
                   <p className="font-medium">{comment.author}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(comment.createdAt).toLocaleDateString("ko-KR")}
+                    {new Date(comment.created_at).toLocaleDateString("ko-KR")}
                   </p>
                 </div>
                 <button

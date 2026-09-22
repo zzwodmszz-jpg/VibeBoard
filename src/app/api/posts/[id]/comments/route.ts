@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(
   request: NextRequest,
@@ -16,12 +16,35 @@ export async function POST(
       );
     }
 
-    const comment = db.comments.addComment(params.id, { content, author });
+    // Check if post exists
+    const { data: post } = await supabase
+      .from("posts")
+      .select("id")
+      .eq("id", params.id)
+      .single();
 
-    if (!comment) {
+    if (!post) {
       return NextResponse.json(
         { error: "Post not found" },
         { status: 404 }
+      );
+    }
+
+    // Create comment
+    const { data: comment, error } = await supabase
+      .from("comments")
+      .insert([{
+        post_id: params.id,
+        content,
+        author,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
       );
     }
 

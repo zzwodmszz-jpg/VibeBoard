@@ -3,18 +3,18 @@ export interface Post {
   title: string;
   content: string;
   author: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string;
+  updated_at: string;
   views: number;
-  comments: Comment[];
+  comments?: Comment[];
 }
 
 export interface Comment {
   id: string;
   content: string;
   author: string;
-  createdAt: Date;
-  postId: string;
+  created_at: string;
+  post_id: string;
 }
 
 export interface CreatePostInput {

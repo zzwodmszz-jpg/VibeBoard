@@ -10,7 +10,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const formattedDate = new Date(post.createdAt).toLocaleDateString("ko-KR", {
+  const formattedDate = new Date(post.created_at).toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -35,7 +35,7 @@ export default function PostCard({ post }: PostCardProps) {
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
               <Badge variant="secondary">조회 {post.views}</Badge>
-              <Badge variant="outline">댓글 {post.comments.length}</Badge>
+              <Badge variant="outline">댓글 {post.comments?.length || 0}</Badge>
             </div>
           </div>
         </CardContent>
