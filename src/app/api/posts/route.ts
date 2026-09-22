@@ -3,15 +3,23 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET() {
   try {
+    console.log("Fetching posts...");
+    console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+
     // Get all posts
     const { data: posts, error } = await supabase
       .from("posts")
       .select("*")
       .order("created_at", { ascending: false });
 
+    console.log("Supabase response:", { posts, error });
+
     if (error) {
       console.error("Supabase error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 }
+      );
     }
 
     // For each post, get comments
@@ -37,7 +45,7 @@ export async function GET() {
   } catch (error) {
     console.error("Fetch error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch posts" },
+      { error: `Error: ${error instanceof Error ? error.message : String(error)}` },
       { status: 500 }
     );
   }
