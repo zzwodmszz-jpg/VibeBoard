@@ -12,8 +12,17 @@ export default function PostList() {
     const fetchPosts = async () => {
       try {
         const response = await fetch("/api/posts");
+        if (!response.ok) {
+          console.error("API error:", response.status, response.statusText);
+          setLoading(false);
+          return;
+        }
         const data = await response.json();
-        setPosts(data);
+        if (Array.isArray(data)) {
+          setPosts(data);
+        } else {
+          console.error("Invalid response format:", data);
+        }
       } catch (error) {
         console.error("Failed to fetch posts:", error);
       } finally {

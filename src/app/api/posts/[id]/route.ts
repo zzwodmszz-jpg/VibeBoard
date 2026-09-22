@@ -6,15 +6,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get post with comments
+    // Get post
     const { data: post, error: postError } = await supabase
       .from("posts")
-      .select(
-        `
-        *,
-        comments(*)
-      `
-      )
+      .select("*")
       .eq("id", params.id)
       .single();
 
@@ -25,6 +20,13 @@ export async function GET(
       );
     }
 
+    // Get comments
+    const { data: comments } = await supabase
+      .from("comments")
+      .select("*")
+      .eq("post_id", params.id)
+      .order("created_at", { ascending: true });
+
     // Increment views
     await supabase
       .from("posts")
@@ -34,8 +36,10 @@ export async function GET(
     return NextResponse.json({
       ...post,
       views: post.views + 1,
+      comments: comments || [],
     });
   } catch (error) {
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch post" },
       { status: 500 }
@@ -58,12 +62,7 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq("id", params.id)
-      .select(
-        `
-        *,
-        comments(*)
-      `
-      )
+      .select()
       .single();
 
     if (error || !post) {
@@ -75,6 +74,7 @@ export async function PUT(
 
     return NextResponse.json(post);
   } catch (error) {
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Failed to update post" },
       { status: 500 }
@@ -101,6 +101,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Post deleted successfully" });
   } catch (error) {
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Failed to delete post" },
       { status: 500 }

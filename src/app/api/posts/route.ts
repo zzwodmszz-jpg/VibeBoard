@@ -3,22 +3,39 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET() {
   try {
+    // Get all posts
     const { data: posts, error } = await supabase
       .from("posts")
-      .select(
-        `
-        *,
-        comments(*)
-      `
-      )
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("Supabase error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(posts);
+    // For each post, get comments
+    if (posts && posts.length > 0) {
+      const postsWithComments = await Promise.all(
+        posts.map(async (post) => {
+          const { data: comments } = await supabase
+            .from("comments")
+            .select("*")
+            .eq("post_id", post.id)
+            .order("created_at", { ascending: true });
+
+          return {
+            ...post,
+            comments: comments || [],
+          };
+        })
+      );
+      return NextResponse.json(postsWithComments);
+    }
+
+    return NextResponse.json(posts || []);
   } catch (error) {
+    console.error("Fetch error:", error);
     return NextResponse.json(
       { error: "Failed to fetch posts" },
       { status: 500 }
@@ -41,20 +58,17 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("posts")
       .insert([{ title, content, author }])
-      .select(
-        `
-        *,
-        comments(*)
-      `
-      )
+      .select()
       .single();
 
     if (error) {
+      console.error("Insert error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json({ ...data, comments: [] }, { status: 201 });
   } catch (error) {
+    console.error("Create error:", error);
     return NextResponse.json(
       { error: "Failed to create post" },
       { status: 500 }
